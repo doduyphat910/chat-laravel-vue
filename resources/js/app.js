@@ -32,6 +32,10 @@ import Vue from 'vue'
 import VueChatScroll from 'vue-chat-scroll'
 Vue.use(VueChatScroll)
 
+import Toaster from 'v-toaster'
+Vue.use(Toaster, {timeout: 5000})
+import 'v-toaster/dist/v-toaster.css'
+
 const app = new Vue({
     el: '#app',
     data: {
@@ -42,7 +46,8 @@ const app = new Vue({
             color: [],
             time: []
         },
-        typing: ''
+        typing: '',
+        numberUsers: 0
     },
     watch: {
         message() {
@@ -90,6 +95,18 @@ const app = new Vue({
                 } else {
                     this.typing = '';
                 }
+            });
+        Echo.join(`chat`)
+            .here((users) => {
+                this.numberUsers = users.length;
+            })
+            .joining((user) => {
+                this.numberUsers += 1;
+                this.$toaster.success(user.name+ ' join room');
+            })
+            .leaving((user) => {
+                this.numberUsers -= 1;
+                this.$toaster.warning(user.name+ ' leave room');
             });
     }
 });
