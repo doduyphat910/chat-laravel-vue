@@ -59980,7 +59980,8 @@ var app = new vue__WEBPACK_IMPORTED_MODULE_0___default.a({
         this.chat.color.push('success');
         this.chat.time.push(this.getTime());
         axios.post('/send', {
-          message: this.message
+          message: this.message,
+          chat: this.chat
         }).then(function (response) {
           console.log(response);
           _this.message = '';
@@ -59992,36 +59993,63 @@ var app = new vue__WEBPACK_IMPORTED_MODULE_0___default.a({
     getTime: function getTime() {
       var time = new Date();
       return time.getHours() + ':' + time.getMinutes();
+    },
+    getOldMessage: function getOldMessage() {
+      var _this2 = this;
+
+      axios.post('/get-old-message', {}).then(function (response) {
+        if (response.data != 0) {
+          _this2.chat = response.data;
+        }
+      }).catch(function (error) {
+        console.log(error);
+      });
+    },
+    deleteSession: function deleteSession() {
+      var _this3 = this;
+
+      axios.post('/delete-session', {}).then(function (response) {
+        _this3.$toaster.warning('chat history were deleted');
+      });
     }
   },
   mounted: function mounted() {
-    var _this2 = this;
+    var _this4 = this;
 
+    this.getOldMessage();
     Echo.private('chat').listen('ChatEvent', function (e) {
-      _this2.chat.message.push(e.message);
+      _this4.chat.message.push(e.message);
 
-      _this2.chat.user.push(e.user);
+      _this4.chat.user.push(e.user);
 
-      _this2.chat.color.push('warning');
+      _this4.chat.color.push('warning');
 
-      _this2.chat.time.push(_this2.getTime());
+      _this4.chat.time.push(_this4.getTime());
+
+      axios.post('/save-to-session', {
+        chat: _this4.chat
+      }).then(function (response) {
+        console.log(response);
+      }).catch(function (error) {
+        console.log(error);
+      });
     }).listenForWhisper('typing', function (e) {
       if (e.name != '') {
-        _this2.typing = 'typing ...';
+        _this4.typing = 'typing ...';
       } else {
-        _this2.typing = '';
+        _this4.typing = '';
       }
     });
     Echo.join("chat").here(function (users) {
-      _this2.numberUsers = users.length;
+      _this4.numberUsers = users.length;
     }).joining(function (user) {
-      _this2.numberUsers += 1;
+      _this4.numberUsers += 1;
 
-      _this2.$toaster.success(user.name + ' join room');
+      _this4.$toaster.success(user.name + ' join room');
     }).leaving(function (user) {
-      _this2.numberUsers -= 1;
+      _this4.numberUsers -= 1;
 
-      _this2.$toaster.warning(user.name + ' leave room');
+      _this4.$toaster.warning(user.name + ' leave room');
     });
   }
 });
