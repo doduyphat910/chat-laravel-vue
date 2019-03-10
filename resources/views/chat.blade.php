@@ -21,7 +21,7 @@
         <div class="offset-4 col-4">
             <li class="list-group-item active">Chat room</li>
             <ul class="list-group" v-chat-scroll>
-                <message v-for="value in chat.message" :key="index" color="success">@{{ value }}</message>
+                <message v-for="(value,index) in chat.message" :key="index" :user=chat.user[index] :color=chat.color[index]>@{{ value }}</message>
             </ul>
             <input type="text" class="form-control message" v-model="message" @keyup.enter="send()" placeholder="Type your message here ..." />
         </div>
